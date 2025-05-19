@@ -1,0 +1,12 @@
+Topic,Summary,Sentiment,Confidence,URL
+NIFTY,Your information may be shared with third parties.,NEGATIVE,0.9903545379638672,https://www.google.com/search?q%3Dyahoo%2Bfinance%2BNIFTY%26tbm%3Dnws%26pccc%3D1
+NIFTY,We are aware of the issue and are working to resolve it.,POSITIVE,0.9979088306427002,https://finance.yahoo.com/news/indias-nifty-50-set-test-031606970.html
+NIFTY,We are aware of the issue and are working to resolve it.,POSITIVE,0.9979088306427002,https://finance.yahoo.com/news/nse-international-exchange-unveils-identity-180000352.html
+NIFTY,We are aware of the issue and are working to resolve it.,POSITIVE,0.9979088306427002,https://finance.yahoo.com/news/passive-funds-tracking-nifty-indices-131300762.html
+NIFTY,We are aware of the issue and are working to resolve it.,POSITIVE,0.9979088306427002,https://uk.finance.yahoo.com/news/indian-shares-set-open-higher-023908159.html
+NIFTY,We are aware of the issue and are working to resolve it.,POSITIVE,0.9979088306427002,https://uk.finance.yahoo.com/news/indian-shares-set-open-higher-030245459.html
+NIFTY,We are aware of the issue and are working to resolve it.,POSITIVE,0.9979088306427002,https://uk.finance.yahoo.com/news/indias-nifty-50-set-open-024701027.html
+NIFTY,"RBI keeps key lending rate at 6.50%, as expected. India's main employee national insurance will be cut from 10% to 8%",NEGATIVE,0.9852377772331238,https://uk.finance.yahoo.com/news/indias-nifty-set-open-little-023855291.html
+NIFTY,We are aware of the issue and are working to resolve it.,POSITIVE,0.9979088306427002,https://finance.yahoo.com/news/nse-world-largest-derivative-exchange-154300631.html
+NIFTY,"HDFC Bank leads gainers on Friday, but IT stocks post worst week in 12 months.",NEGATIVE,0.9971791505813599,https://uk.finance.yahoo.com/news/indian-shares-set-drop-reports-023726205.html
+NIFTY,Earnings growth is proving to be a key metric for stock pickers. Foreign investors are going beyond the 50: Dugan,POSITIVE,0.9922879934310913,https://ca.finance.yahoo.com/news/hottest-indian-stock-index-best-230000926.html
