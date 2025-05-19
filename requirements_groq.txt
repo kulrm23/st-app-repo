@@ -1,0 +1,5 @@
+langchain==0.1.16
+langchain-core==0.1.52
+langchain-community==0.0.38
+langchain-experimental==0.0.53
+langchain-text-splitters==0.0.2

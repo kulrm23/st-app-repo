@@ -1,0 +1,27 @@
+cookie:
+  expiry_days: 500
+  key: some_signature_key
+  name: some_cookie_name
+credentials:
+  usernames:
+    arana:
+      email: annurana1154@gmail.com
+      failed_login_attempts: 0
+      logged_in: false
+      name: Mrs. Annu Rana
+      password: $2b$12$Blb0KNehotXmzcNxqQxhOe1p0F6Bx/28Z4ttydJW4ZnTX58HTPKnG
+    krana:
+      email: kuldeep7322@gmail.com
+      failed_login_attempts: 0
+      logged_in: true
+      name: Mr. kuldeep Rana
+      password: $2b$12$2RMLfd9i.I3dkjCIdrAxnuXKph9VaM.Cge5Wa07xyfHcqK01mu7M6
+    stuser:
+      email: stuser@gmail.com
+      failed_login_attempts: 0
+      logged_in: false
+      name: Mr. stuser
+      password: $2b$12$Fr1LItXes1OTbBI7xIZoiOB6UL6X494akTtdhn0eu.fZiLB.z.9m2
+pre-authorized:
+  emails:
+  - 123@gmail.com
