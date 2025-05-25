@@ -15,8 +15,54 @@ from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 from scipy.signal import argrelextrema
 from collections import deque
+from pandas.tseries.offsets import BusinessDay
+import pytz
 
 warnings.filterwarnings('ignore')
+
+# Set page configuration as the first Streamlit command
+st.set_page_config(page_title="Financial Analysis Platform", layout="centered")
+
+# Custom CSS for mobile responsiveness
+st.markdown("""
+    <style>
+    /* Ensure main content is responsive */
+    .main .block-container {
+        padding: 1rem;
+        max-width: 100%;
+    }
+    /* Adjust font sizes for mobile */
+    @media (max-width: 768px) {
+        .stMarkdown, .stText, .stButton > button, .stSelectbox, .stDateInput {
+            font-size: 14px !important;
+        }
+        /* Make dataframe scrollable on mobile */
+        .stDataFrame {
+            overflow-x: auto;
+            width: 100%;
+        }
+        /* Reduce padding for inputs */
+        .stSelectbox, .stDateInput, .stCheckbox {
+            padding: 0.5rem 0;
+        }
+        /* Adjust calculation summary text */
+        .calc-summary {
+            font-size: 14px !important;
+            line-height: 1.2;
+        }
+    }
+    /* Improve button and input spacing */
+    .stButton > button {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    /* Ensure Plotly chart is responsive */
+    .js-plotly-plot .plotly {
+        width: 100% !important;
+        height: auto !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 @st.cache_data(ttl=300)  # Cache for 5 minutes
 def get_data(ticker, interval, start, end):
@@ -468,12 +514,30 @@ def run_analysis(ticker, ticker_index, interval, start_date, end_date):
                                     'Long_I_W': '{:d}'
                                 })
 
-    st.write(f"<span style='color: red; font-size: 18px;'>General calculations: {len(dataframes)} | Indices calculations: {len(dataframes_index)} | Weighted calculations: {len(dataframes_weighted)} | Index Weighted calculations: {len(dataframes_index_weighted)}</span>", unsafe_allow_html=True)
+    st.markdown(f"<span class='calc-summary' style='color: red;'>General: {len(dataframes)} | Indices: {len(dataframes_index)} | Weighted: {len(dataframes_weighted)} | Index Weighted: {len(dataframes_index_weighted)}</span>", unsafe_allow_html=True)
 
-    st.dataframe(data=styled_df, width=1200, height=600, use_container_width=False, hide_index=False, column_order=['close', 'Short_I_W', 'Short_I', 'Short', 'Long_I_W', 'Long_I', 'Long'], column_config=None)
+    # Responsive dataframe with prioritized columns for mobile
+    st.dataframe(
+        data=styled_df,
+        use_container_width=True,
+        height=None,  # Auto height
+        hide_index=False,
+        column_order=['close', 'Short', 'Long', 'Short_I', 'Long_I', 'Short_W', 'Long_W', 'Short_I_W', 'Long_I_W'],
+        column_config={
+            'close': st.column_config.NumberColumn('Close', format="%.2f"),
+            'Short': st.column_config.NumberColumn('Short', format="%d"),
+            'Long': st.column_config.NumberColumn('Long', format="%d"),
+            'Short_I': st.column_config.NumberColumn('Short_I', format="%d"),
+            'Long_I': st.column_config.NumberColumn('Long_I', format="%d"),
+            'Short_W': st.column_config.NumberColumn('Short_W', format="%d"),
+            'Long_W': st.column_config.NumberColumn('Long_W', format="%d"),
+            'Short_I_W': st.column_config.NumberColumn('Short_I_W', format="%d"),
+            'Long_I_W': st.column_config.NumberColumn('Long_I_W', format="%d")
+        }
+    )
 
     rb_bounds = calc_rangebreak(maxima_dict['^NSEI'].index.to_series()) if '^NSEI' in maxima_dict else []
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, shared_yaxes=True, vertical_spacing=0.05, row_heights=[0.3, 0.1])
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, shared_yaxes=True, vertical_spacing=0.05, row_heights=[0.7, 0.3])
     if '^NSEI' in maxima_dict:
         fig.add_trace(go.Candlestick(
                 x=maxima_dict['^NSEI'].index,
@@ -486,45 +550,58 @@ def run_analysis(ticker, ticker_index, interval, start_date, end_date):
                 x=maxima_dict['^NSEI'].index,
                 y=Analysis_data['Short'],
                 mode='lines',
-                line=dict(color="red", width=3),
+                line=dict(color="red", width=2),
                 name='Lower_high'), row=2, col=1)
         fig.add_trace(go.Scatter(
                 x=maxima_dict['^NSEI'].index,
                 y=Analysis_data['Long'],
                 mode='lines',
-                line=dict(color="green", width=3),
+                line=dict(color="green", width=2),
                 name='Higher_high'), row=2, col=1)
         fig.add_trace(go.Scatter(
                 x=maxima_dict['^NSEI'].index,
                 y=[10] * len(maxima_dict['^NSEI']),
                 mode='lines',
-                line=dict(color="orange", width=3, dash='dash'),
+                line=dict(color="orange", width=2, dash='dash'),
                 name='th_0'), row=2, col=1)
         fig.add_trace(go.Scatter(
                 x=maxima_dict['^NSEI'].index,
                 y=[15] * len(maxima_dict['^NSEI']),
                 mode='lines',
-                line=dict(color="red", width=3, dash='dash'),
+                line=dict(color="red", width=2, dash='dash'),
                 name='th_1'), row=2, col=1)
     fig.update_layout(
-            title='Asset Data',
-            xaxis_title='time',
-            yaxis_title='Live_levels',
-            template='seaborn',
-            xaxis_rangeslider_visible=False,
-            width=1200, height=1600)
+        title='Asset Data',
+        xaxis_title='Time',
+        yaxis_title='Live Levels',
+        template='seaborn',
+        xaxis_rangeslider_visible=False,
+        height=600,  # Reduced for mobile
+        margin=dict(l=10, r=10, t=50, b=50),
+        showlegend=True,
+        font=dict(size=10),  # Smaller font for mobile
+        uirevision='constant'  # Preserve zoom/pan state
+    )
     fig.update_xaxes(rangebreaks=rb_bounds)
-    st.plotly_chart(fig)
-    st.set_option('deprecation.showPyplotGlobalUse', False)
-
-# Streamlit page configuration
-st.set_page_config(page_title="Financial Analysis Platform", layout="wide")
+    st.plotly_chart(fig, use_container_width=True)
 
 # Main interface
 st.title("Financial Analysis Platform")
-st.markdown("Select parameters to analyze market data.")
+st.markdown("Analyze market data with real-time insights.")
 
-# Define ticker lists (updated to fix invalid tickers)
+# Input form for better mobile UX
+with st.form(key='analysis_form'):
+    intervals = ['5m', '15m', '30m', '1h', '1d']
+    interval = st.selectbox("Interval", intervals, index=intervals.index('5m'))
+    start_dates, end_dates = get_date_range()
+    # Set default start date to 5 business days before today
+    default_start_date = (datetime.today() - BusinessDay(n=5)).date()
+    start_date = st.date_input("Start Date", default_start_date, min_value=datetime.today() - timedelta(days=7), max_value=datetime.today())
+    end_date = st.date_input("End Date", datetime.today(), min_value=datetime.today() - timedelta(days=7), max_value=datetime.today())
+    auto_run = st.checkbox("Auto-Run (every 2 minutes)", value=True)
+    submit_button = st.form_submit_button("Analyse")
+
+# Define ticker lists
 ticker = ['^NSEI', '^NSEBANK', 'ADANIENT.NS', 'ADANIPORTS.NS', 'APOLLOHOSP.NS', 'ASIANPAINT.NS', 'AXISBANK.NS', 
           'BAJAJ-AUTO.NS', 'BAJAJFINSV.NS', 'BAJFINANCE.NS', 'BHARTIARTL.NS', 'BPCL.NS', 'BRITANNIA.NS', 'CIPLA.NS', 
           'COALINDIA.NS', 'DIVISLAB.NS', 'DRREDDY.NS', 'EICHERMOT.NS', 'GRASIM.NS', 'HCLTECH.NS', 'HDFCBANK.NS', 
@@ -537,48 +614,54 @@ ticker_index = ['^INDIAVIX', '^CNXAUTO', '^CNXPSUBANK', '^NSEBANK', '^CNXFMCG', 
                 '^CNXPHARMA', '^CNXMNC', '^CNXIT', '^CNXINFRA', '^CNXCONSUM', '^CNXSERVICE', '^CNXCMDT', '^CNXREALTY', 
                 '^CNXMEDIA', '^CNXFIN']
 
-# Input widgets
-intervals = ['5m', '15m', '30m', '1h', '1d']
-interval = st.selectbox("Select Interval", intervals, index=intervals.index('5m'))
-start_dates, end_dates = get_date_range()
-start_date = st.date_input("Start Date", datetime.today(), min_value=datetime.today() - timedelta(days=7), max_value=datetime.today())
-end_date = st.date_input("End Date", datetime.today(), min_value=datetime.today() - timedelta(days=7), max_value=datetime.today())
-
-# Auto-run toggle
-auto_run = st.checkbox("Enable Auto-Run (every 2 minutes)", value=True)
-
-# Manual run button
-if st.button("Analyse"):
-    start_time = time.time()
-    run_analysis(ticker, ticker_index, interval, start_date, end_date)
-    st.write(f"Analysis completed in {time.time() - start_time:.2f} seconds.")
+# Handle form submission
+if submit_button:
+    with st.spinner("Running analysis..."):
+        start_time = time.time()
+        run_analysis(ticker, ticker_index, interval, start_date, end_date)
+        st.write(f"Analysis completed in {time.time() - start_time:.2f} seconds.")
 
 # Auto-run logic
 if auto_run:
-    if 'last_run_time' not in st.session_state:
-        st.session_state.last_run_time = 0
-        st.session_state.run_count = 0
-        st.session_state.start_time = time.time()
+    # Get current time in IST
+    ist = pytz.timezone('Asia/Kolkata')
+    current_time = datetime.now(ist)
+    current_hour = current_time.hour
+    current_minute = current_time.minute
+    current_time_of_day = current_hour * 60 + current_minute  # Minutes since midnight
+    start_time_of_day = 9 * 60  # 9:00 AM IST
+    end_time_of_day = 15 * 60 + 40  # 3:40 PM IST
 
-    # Check if 2 minutes have passed since last run or it's the first run
-    current_time = time.time()
-    if current_time - st.session_state.last_run_time >= 120:  # 2 minutes
-        st.session_state.run_count += 1
-        st.write(f"Auto-Run #{st.session_state.run_count} started at {datetime.now().strftime('%H:%M:%S')}")
-        start_time = time.time()
-        run_analysis(ticker, ticker_index, interval, start_date, end_date)
-        st.session_state.last_run_time = current_time
-        st.write(f"Auto-Run #{st.session_state.run_count} completed in {time.time() - start_time:.2f} seconds.")
-
-        # Check if total execution time is within 2.5 minutes (150 seconds)
-        if time.time() - st.session_state.start_time >= 150:
-            st.warning("Stopping auto-run to comply with Streamlit's 3-minute timeout.")
+    if start_time_of_day <= current_time_of_day <= end_time_of_day:
+        # Within trading hours, proceed with auto-run
+        if 'last_run_time' not in st.session_state:
             st.session_state.last_run_time = 0
             st.session_state.run_count = 0
             st.session_state.start_time = time.time()
-        else:
-            # Wait for the remainder of the 2-minute interval
-            time_to_wait = 120 - (time.time() - st.session_state.last_run_time)
-            if time_to_wait > 0:
-                time.sleep(time_to_wait)
-            st.rerun()  # Refresh the page to trigger the next run
+
+        # Check if 2 minutes have passed since last run or it's the first run
+        current_time = time.time()
+        if current_time - st.session_state.last_run_time >= 120:  # 2 minutes
+            st.session_state.run_count += 1
+            st.write(f"Auto-Run #{st.session_state.run_count} started at {datetime.now(ist).strftime('%H:%M:%S')} IST")
+            with st.spinner("Running auto-analysis..."):
+                start_time = time.time()
+                run_analysis(ticker, ticker_index, interval, start_date, end_date)
+                st.session_state.last_run_time = current_time
+                st.write(f"Auto-Run #{st.session_state.run_count} completed in {time.time() - start_time:.2f} seconds.")
+
+            # Check if total execution time is within 2.5 minutes (150 seconds)
+            if time.time() - st.session_state.start_time >= 150:
+                st.warning("Stopping auto-run to comply with Streamlit's 3-minute timeout.")
+                st.session_state.last_run_time = 0
+                st.session_state.run_count = 0
+                st.session_state.start_time = time.time()
+            else:
+                # Wait for the remainder of the 2-minute interval
+                time_to_wait = 120 - (time.time() - st.session_state.last_run_time)
+                if time_to_wait > 0:
+                    time.sleep(time_to_wait)
+                st.rerun()  # Refresh the page to trigger the next run
+    else:
+        # Outside trading hours, disable auto-run
+        st.info(f"Auto-Run is disabled outside trading hours (9:00 AM to 3:40 PM IST). Current time: {current_time.strftime('%H:%M:%S')} IST.")
