@@ -658,7 +658,7 @@ if auto_run:
                 st.session_state.start_time = time.time()
             else:
                 # Wait for the remainder of the 2-minute interval
-                time_to_wait = 120 - (time.time() - st.session_state.last_run_time)
+                time_to_wait = 180 - (time.time() - st.session_state.last_run_time)
                 if time_to_wait > 0:
                     time.sleep(time_to_wait)
                 st.rerun()  # Refresh the page to trigger the next run
