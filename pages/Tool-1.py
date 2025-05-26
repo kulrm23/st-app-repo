@@ -597,7 +597,7 @@ with st.form(key='analysis_form'):
     # Set default start date to 5 business days before today
     default_start_date = (datetime.today() - BusinessDay(n=5)).date()
     start_date = st.date_input("Start Date", default_start_date, min_value=datetime.today() - timedelta(days=7), max_value=datetime.today())
-    end_date = st.date_input("End Date", datetime.today(), min_value=datetime.today() - timedelta(days=7), max_value=datetime.today())
+    end_date = st.date_input("End Date", datetime.today() + timedelta(days=1), min_value=datetime.today() - timedelta(days=7), max_value=datetime.today())
     auto_run = st.checkbox("Auto-Run (every 2 minutes)", value=True)
     submit_button = st.form_submit_button("Analyse")
 
