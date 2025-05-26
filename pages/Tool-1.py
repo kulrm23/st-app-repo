@@ -70,7 +70,7 @@ def get_data(ticker, interval, start, end):
         yfObj = yf.Ticker(ticker)
         # Ensure end date is at least one minute after start for intraday data
         if start == end:
-            end = (pd.to_datetime(start) + timedelta(days=1)).strftime("%Y-%m-%d")
+            end = (pd.to_datetime(start) + timedelta(days=2)).strftime("%Y-%m-%d")
         # Restrict to 7 days for 5m interval
         if interval == '5m' and (pd.to_datetime(end) - pd.to_datetime(start)).days > 7:
             start = (pd.to_datetime(end) - timedelta(days=7)).strftime("%Y-%m-%d")
